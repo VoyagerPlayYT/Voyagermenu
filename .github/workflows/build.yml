@@ -16,8 +16,7 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y git curl make xz-utils ca-certificates \
-            fakeroot zip libtinfo5 libplist-utils
+          sudo apt-get install -y git curl make xz-utils ca-certificates fakeroot zip
 
       - name: Install Theos
         run: |
@@ -34,7 +33,7 @@ jobs:
           sudo chown -R "$USER" /opt/theos/sdks
           echo "SDKs:" && ls /opt/theos/sdks/
 
-      - name: Download Toolchain (sbingner arm64e)
+      - name: Download Toolchain
         run: |
           curl -L --retry 5 \
             "https://github.com/sbingner/llvm-project/releases/download/v10.0.0-1/linux-ios-arm64e-clang-toolchain.tar.lzma" \
@@ -45,7 +44,7 @@ jobs:
           sudo mv "$TMP/ios-arm64e-clang-toolchain/"* /opt/theos/toolchain/linux/iphone/
           sudo chown -R "$USER" /opt/theos/toolchain
           rm -rf "$TMP" toolchain.tar.lzma
-          echo "Toolchain bin:" && ls /opt/theos/toolchain/linux/iphone/bin/ | head -10
+          echo "Toolchain:" && ls /opt/theos/toolchain/linux/iphone/bin/ | head -10
 
       - name: Build .deb
         run: make package FINALPACKAGE=1

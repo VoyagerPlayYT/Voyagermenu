@@ -16,7 +16,11 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y git curl make xz-utils ca-certificates fakeroot zip
+          sudo apt-get install -y git curl make xz-utils ca-certificates \
+            fakeroot zip libncurses6 libncurses-dev
+          sudo find /lib /usr/lib -name "libtinfo.so*" 2>/dev/null
+          sudo ln -sf /lib/x86_64-linux-gnu/libtinfo.so.6 /lib/x86_64-linux-gnu/libtinfo.so.5 || true
+          sudo ldconfig
 
       - name: Install Theos
         run: |
@@ -44,7 +48,8 @@ jobs:
           sudo mv "$TMP/ios-arm64e-clang-toolchain/"* /opt/theos/toolchain/linux/iphone/
           sudo chown -R "$USER" /opt/theos/toolchain
           rm -rf "$TMP" toolchain.tar.lzma
-          echo "Toolchain:" && ls /opt/theos/toolchain/linux/iphone/bin/ | head -10
+          echo "Toolchain test:"
+          /opt/theos/toolchain/linux/iphone/bin/clang --version || echo "FAILED"
 
       - name: Build .deb
         run: make package FINALPACKAGE=1

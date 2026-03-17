@@ -1,0 +1,45 @@
+name: Build Theos Tweak
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y git curl make xz-utils ca-certificates
+
+      - name: Install Theos
+        run: |
+          sudo git clone --recursive https://github.com/theos/theos.git /opt/theos
+          sudo chown -R "$USER" /opt/theos
+
+      - name: Download iOS 16.5 SDK
+        run: |
+          curl -L --retry 3 \
+            "https://github.com/theos/sdks/releases/download/2023-10-01/iPhoneOS16.5.sdk.tar.xz" \
+            -o sdk.tar.xz
+          sudo mkdir -p /opt/theos/sdks
+          sudo tar -xf sdk.tar.xz -C /opt/theos/sdks
+          sudo chown -R "$USER" /opt/theos/sdks
+
+      - name: Build .deb
+        run: make package FINALPACKAGE=1
+        env:
+          THEOS: /opt/theos
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GameOverlayMenu-deb
+          path: packages/*.deb
+          retention-days: 30

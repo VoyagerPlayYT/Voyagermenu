@@ -1,0 +1,9 @@
+Package: com.yourhandle.gameoverlaymenu
+Name: Game Overlay Menu
+Depends: mobilesubstrate
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Dynamic runtime-scanning overlay menu for games
+Maintainer: YourName
+Author: YourName
+Section: Tweaks

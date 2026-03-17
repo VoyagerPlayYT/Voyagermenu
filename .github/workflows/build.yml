@@ -7,49 +7,55 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Theos
-        uses: actions/checkout@v4
-        with:
-          repository: theos/theos
-          path: theos
-          submodules: recursive
-
       - name: Install system deps
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y git curl make xz-utils ca-certificates fakeroot zip
+          sudo apt-get install -y \
+            git curl make xz-utils ca-certificates \
+            fakeroot zip perl libncurses5 libtinfo5
+
+      - name: Install Theos
+        run: |
+          sudo git clone --recursive https://github.com/theos/theos.git /opt/theos
+          sudo chown -R "$USER" /opt/theos
 
       - name: Download iOS SDK
         run: |
-          mkdir -p theos/sdks
+          sudo mkdir -p /opt/theos/sdks
           curl -L --retry 5 \
             "https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS16.5.sdk.tar.xz" \
             -o sdk.tar.xz
-          tar -xJf sdk.tar.xz -C theos/sdks
-          ls theos/sdks/
+          sudo tar -xJf sdk.tar.xz -C /opt/theos/sdks
+          sudo chown -R "$USER" /opt/theos/sdks
+          ls /opt/theos/sdks/
 
-      - name: Install clang toolchain via apt
+      - name: Download Toolchain (sbingner latest)
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
-          sudo apt-get update -q
-          sudo apt-get install -y clang-15 lld-15
-          sudo mkdir -p theos/toolchain/linux/iphone/bin
-          sudo ln -sf $(which clang-15)  theos/toolchain/linux/iphone/bin/clang
-          sudo ln -sf $(which clang-15)  theos/toolchain/linux/iphone/bin/clang++
-          sudo ln -sf $(which lld-15)    theos/toolchain/linux/iphone/bin/ld
-          clang-15 --version
+          curl -L --retry 5 \
+            "https://github.com/sbingner/llvm-project/releases/latest/download/linux-ios-arm64e-clang-toolchain.tar.lzma" \
+            -o toolchain.tar.lzma
+          TMP=$(mktemp -d)
+          tar --lzma -xf toolchain.tar.lzma -C "$TMP"
+          sudo mkdir -p /opt/theos/toolchain/linux/iphone
+          sudo mv "$TMP/ios-arm64e-clang-toolchain/"* /opt/theos/toolchain/linux/iphone/
+          sudo chown -R "$USER" /opt/theos/toolchain
+          rm -rf "$TMP" toolchain.tar.lzma
+          echo "=== Clang version ==="
+          /opt/theos/toolchain/linux/iphone/bin/clang --version
+          echo "=== LD version ==="
+          /opt/theos/toolchain/linux/iphone/bin/ld --version || true
+          ls /opt/theos/toolchain/linux/iphone/bin/
 
       - name: Build .deb
         run: make package FINALPACKAGE=1
         env:
-          THEOS: ${{ github.workspace }}/theos
+          THEOS: /opt/theos
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

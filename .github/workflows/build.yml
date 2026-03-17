@@ -16,7 +16,7 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y git curl make xz-utils ca-certificates fakeroot
+          sudo apt-get install -y git curl make xz-utils ca-certificates fakeroot zip
 
       - name: Install Theos
         run: |
@@ -31,8 +31,17 @@ jobs:
             -o sdk.tar.xz
           sudo tar -xJf sdk.tar.xz -C /opt/theos/sdks
           sudo chown -R "$USER" /opt/theos/sdks
-          echo "SDKs installed:"
-          ls /opt/theos/sdks/
+          echo "SDKs:" && ls /opt/theos/sdks/
+
+      - name: Download Toolchain (clang for iOS)
+        run: |
+          sudo mkdir -p /opt/theos/toolchain/linux/iphone
+          curl -L --retry 5 \
+            "https://github.com/CRKatri/llvm-project/releases/download/swift-5.3.2-RELEASE/swift-5.3.2-RELEASE-ubuntu20.04.tar.gz" \
+            -o toolchain.tar.gz
+          sudo tar -xzf toolchain.tar.gz --strip-components=1 -C /opt/theos/toolchain/linux/iphone
+          sudo chown -R "$USER" /opt/theos/toolchain
+          echo "Toolchain:" && ls /opt/theos/toolchain/linux/iphone/bin/ | head -10
 
       - name: Build .deb
         run: make package FINALPACKAGE=1

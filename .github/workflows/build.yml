@@ -16,21 +16,23 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y git curl make xz-utils ca-certificates
+          sudo apt-get install -y git curl make xz-utils ca-certificates fakeroot
 
       - name: Install Theos
         run: |
           sudo git clone --recursive https://github.com/theos/theos.git /opt/theos
           sudo chown -R "$USER" /opt/theos
 
-      - name: Download iOS 16.5 SDK
+      - name: Download iOS SDK
         run: |
-          curl -L --retry 3 \
-            "https://github.com/theos/sdks/releases/download/2023-10-01/iPhoneOS16.5.sdk.tar.xz" \
-            -o sdk.tar.xz
           sudo mkdir -p /opt/theos/sdks
-          sudo tar -xf sdk.tar.xz -C /opt/theos/sdks
+          curl -L --retry 5 \
+            "https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS16.5.sdk.tar.xz" \
+            -o sdk.tar.xz
+          sudo tar -xJf sdk.tar.xz -C /opt/theos/sdks
           sudo chown -R "$USER" /opt/theos/sdks
+          echo "SDKs installed:"
+          ls /opt/theos/sdks/
 
       - name: Build .deb
         run: make package FINALPACKAGE=1

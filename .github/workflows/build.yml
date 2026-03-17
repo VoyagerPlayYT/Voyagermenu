@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout
@@ -16,11 +16,9 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y git curl make xz-utils ca-certificates \
-            fakeroot zip libncurses6 libncurses-dev
-          sudo find /lib /usr/lib -name "libtinfo.so*" 2>/dev/null
-          sudo ln -sf /lib/x86_64-linux-gnu/libtinfo.so.6 /lib/x86_64-linux-gnu/libtinfo.so.5 || true
-          sudo ldconfig
+          sudo apt-get install -y \
+            git curl make xz-utils ca-certificates \
+            fakeroot zip perl build-essential libtinfo5
 
       - name: Install Theos
         run: |
@@ -35,7 +33,7 @@ jobs:
             -o sdk.tar.xz
           sudo tar -xJf sdk.tar.xz -C /opt/theos/sdks
           sudo chown -R "$USER" /opt/theos/sdks
-          echo "SDKs:" && ls /opt/theos/sdks/
+          ls /opt/theos/sdks/
 
       - name: Download Toolchain
         run: |
@@ -48,8 +46,8 @@ jobs:
           sudo mv "$TMP/ios-arm64e-clang-toolchain/"* /opt/theos/toolchain/linux/iphone/
           sudo chown -R "$USER" /opt/theos/toolchain
           rm -rf "$TMP" toolchain.tar.lzma
-          echo "Toolchain test:"
-          /opt/theos/toolchain/linux/iphone/bin/clang --version || echo "FAILED"
+          echo "Clang test:"
+          /opt/theos/toolchain/linux/iphone/bin/clang --version
 
       - name: Build .deb
         run: make package FINALPACKAGE=1

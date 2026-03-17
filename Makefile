@@ -8,7 +8,7 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = GameOverlayMenu
 
-GameOverlayMenu_FILES = Tweak.xm \
+GameOverlayMenu_FILES = Tweak.mm \
                         src/FeatureManager.m \
                         src/RuntimeScanner.m \
                         src/OverlayMenuController.m

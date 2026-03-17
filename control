@@ -1,9 +1,9 @@
-Package: com.yourhandle.gameoverlaymenu
-Name: Game Overlay Menu
+Package: com.voyager.gameoverlaymenu
+Name: VoyagerMenu
 Depends: mobilesubstrate
-Version: 1.0.0
+Version: 2.0.0
 Architecture: iphoneos-arm
-Description: Dynamic runtime-scanning overlay menu for games
-Maintainer: YourName
-Author: YourName
+Description: Smart game overlay menu
+Maintainer: VoyagerPlayYT
+Author: VoyagerPlayYT
 Section: Tweaks
